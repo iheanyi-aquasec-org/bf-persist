@@ -78,6 +78,6 @@ jobs:
             --artifact-path "iheanyinjeze/bf-persist:1.0" 
 
             # The docker image name:tag of the newly built image
-            # --artifact-path "iheanyinjeze/actions-integration:${{ env.tag-version }}" 
+            # --artifact-path "iheanyinjeze/bf-persist:${{ env.tag-version }}" 
             # OR the path to the root folder of your project. I.e my-repo/my-app 
             # --artifact-path "${{env.MY_APP_ROOT}}"
