@@ -80,7 +80,7 @@ jobs:
             --access-token "${{ secrets.GITHUB_TOKEN }}" \
             --aqua-key "${{ secrets.AQUA_KEY }}" \
             --aqua-secret "${{ secrets.AQUA_SECRET }}" \
-            --artifact-path "iheanyinjeze/actions-integration:1.0" 
+            --artifact-path "iheanyinjeze/bf-persist:1.0" 
 
             # The docker image name:tag of the newly built image
             # --artifact-path "iheanyinjeze/actions-integration:${{ env.tag-version }}" 
