@@ -31,19 +31,15 @@ jobs:
 
   # Allows you to run this workflow manually from the Actions tab
   build:
-    # The type of runner that the job will run on
+    name: Build Image/Generate manifest
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      # Runs docker build 
       - name: Build docker image
         run: docker build -t bf-persist:1.0 .
 
-      # Aqua Registry login
       - name: Login to Aqua Registry
         uses: docker/login-action@v1
         with:
@@ -52,12 +48,10 @@ jobs:
           password: ${{ secrets.AQUADEV_PASS }}
       
       
-      # Scan the test Image
       - name: Run the scanner 
         run: |
           docker run -e BUILD_JOB_NAME=Fruit_Bank -e BUILD_NUMBER=${{ github.run_id }} --rm -v /var/run/docker.sock:/var/run/docker.sock registry.aquasec.com/scanner:2022.4 scan --host https://225fccbcb7.cloud.aquasec.com/ --local bf-persist:1.0 --token ${{ secrets.TOKEN }} --layer-vulnerabilities --no-verify --html > .github/workflows/scan-output.html
     
-      # Create scan artifact
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
