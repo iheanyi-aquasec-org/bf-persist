@@ -1,0 +1,88 @@
+name: Build and scan
+
+# Controls when the action will run. 
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: 
+      - main
+jobs:
+  aqua:
+    name: Aqua Code Scan 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run Aqua scanner
+        uses: docker://aquasec/aqua-scanner
+        with:
+          args: trivy fs --debug --security-checks config,vuln,secret --sast .
+          # To customize which severities to scan for, add the following flag: --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
+          # To enable SAST scanning, add: --sast
+          # To enable npm/dotnet non-lock file scanning, add: --package-json / --dotnet-proj
+        env:
+          AQUA_KEY: ${{ secrets.AQUA_KEY }}
+          AQUA_SECRET: ${{ secrets.AQUA_SECRET }}
+          GITHUB_TOKEN: ${{ github.token }}
+          TRIVY_RUN_AS_PLUGIN: 'aqua'
+
+  # Allows you to run this workflow manually from the Actions tab
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Runs docker build 
+      - name: Build docker image
+        run: docker build -t bf-persist:1.0 .
+
+      # Aqua Registry login
+      - name: Login to Aqua Registry
+        uses: docker/login-action@v1
+        with:
+          registry: registry.aquasec.com
+          username: ${{ secrets.AQUADEV_USERNAME }}
+          password: ${{ secrets.AQUADEV_PASS }}
+      
+      
+      # Scan the test Image
+      - name: Run the scanner 
+        run: |
+          docker run -e BUILD_JOB_NAME=Fruit_Bank -e BUILD_NUMBER=${{ github.run_id }} --rm -v /var/run/docker.sock:/var/run/docker.sock registry.aquasec.com/scanner:2022.4 scan --host https://225fccbcb7.cloud.aquasec.com/ --local bf-persist:1.0 --token ${{ secrets.TOKEN }} --layer-vulnerabilities --no-verify --html > .github/workflows/scan-output.html
+    
+      # Create scan artifact
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+         name: my-artifact
+         path: .github/workflows/scan-output.html
+         retention-days: 5
+         
+      - name: Manifest Generation
+        run: |
+          export BILLY_SERVER=https://billy.codesec.aquasec.com
+          curl -sLo install.sh download.codesec.aquasec.com/billy/install.sh
+          curl -sLo install.sh.checksum https://github.com/argonsecurity/releases/releases/latest/download/install.sh.checksum
+          if ! cat install.sh.checksum | sha256sum ; then
+          echo "install.sh checksum failed"
+          exit 1
+          fi
+          BINDIR="." sh install.sh
+          rm install.sh install.sh.checksum
+          ./billy generate \
+            --access-token "${{ secrets.GITHUB_TOKEN }}" \
+            --aqua-key "${{ secrets.AQUA_KEY }}" \
+            --aqua-secret "${{ secrets.AQUA_SECRET }}" \
+            --artifact-path "iheanyinjeze/actions-integration:1.0" 
+
+            # The docker image name:tag of the newly built image
+            # --artifact-path "iheanyinjeze/actions-integration:${{ env.tag-version }}" 
+            # OR the path to the root folder of your project. I.e my-repo/my-app 
+            # --artifact-path "${{env.MY_APP_ROOT}}"
