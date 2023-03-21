@@ -1,0 +1,17 @@
+{
+  "name": "persistfruit",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node .",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "container:build": "docker build -t bf-persist ./",
+    "container:run": "docker run -p 3000:3000 bf-persist"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "uuid": "^3.3.2"
+  }
+}
