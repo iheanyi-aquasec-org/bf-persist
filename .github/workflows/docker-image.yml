@@ -51,7 +51,7 @@ jobs:
       
       - name: Run the scanner 
         run: |
-          docker run -e BUILD_JOB_NAME=Fruit_Bank -e BUILD_NUMBER=${{ github.run_id }} --rm -v /var/run/docker.sock:/var/run/docker.sock registry.aquasec.com/scanner:2022.4 scan --host https://225fccbcb7.cloud.aquasec.com/ --local bf-persist:1.0 --token ${{ secrets.TOKEN }} --layer-vulnerabilities --no-verify --html > .github/workflows/scan-output.html
+          docker run -e BUILD_JOB_NAME=Fruit_Bank -e BUILD_NUMBER=${{ github.run_id }} --rm -v /var/run/docker.sock:/var/run/docker.sock registry.aquasec.com/scanner:2022.4 scan --host https://225fccbcb7.cloud.aquasec.com/ --local iheanyiorg/bf-persist:1.0 --token ${{ secrets.TOKEN }} --layer-vulnerabilities --no-verify --html > .github/workflows/scan-output.html
     
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
